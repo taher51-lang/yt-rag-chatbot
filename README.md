@@ -42,4 +42,4 @@ This repository serves as a Portfolio Showcase for advanced AI/ML implementation
 
 Focus: LLM Orchestration, Vector Databases, and Semantic Search.
 
-## Developer: Taher | 2nd Year Data Science Studen
+## Developer: Taher | 2nd Year Data Science Student
