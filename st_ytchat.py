@@ -11,32 +11,32 @@ from dotenv import load_dotenv
 import streamlit as st
 load_dotenv()
 if "vectorStore" not in st.session_state:
-    st.session_state.vectorStore = None
+    st.session_state.vectorStore = None # Intitializing vector store variable
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [] # Initializing messages for saving them in convo
 with st.sidebar:
     url = st.text_input("Enter the URL of the youtube video")
     if st.button("Process Video"):
         with st.spinner("Processing..."):
             # Phase 1: Scraping
             video_id = url.split("v=")[-1]
-            yt_api = YouTubeTranscriptApi()
-            transcriptList = yt_api.list(video_id)
+            yt_api = YouTubeTranscriptApi() 
+            transcriptList = yt_api.list(video_id) # Fetchingtranscripts in different Langauges
             try:
-                transcript = transcriptList.find_transcript(["en"])
+                transcript = transcriptList.find_transcript(["en"]) # Fetching English Transcript 
             except:
-                transcript = next(iter(transcriptList))            
+                transcript = next(iter(transcriptList)) #Fetching the The first language transcript if en is not available            
             fetchObjects = transcript.fetch()
             text = ""
             for snippet in fetchObjects:
                 text +=snippet.text + " "
             splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-            chunk_list = splitter.create_documents([text])            
+            chunk_list = splitter.create_documents([text])  # Creating Chunks           
             embeddings = HuggingFaceEmbeddings(
-    model_name = "sentence-transformers/all-MiniLM-L6-v2"
+    model_name = "sentence-transformers/all-MiniLM-L6-v2" #Embedding model initialization
 )
             # Storing in Session State
-            st.session_state.vectorStore = FAISS.from_documents(chunk_list, embedding=embeddings,distance_strategy="COSINE")
+            st.session_state.vectorStore = FAISS.from_documents(chunk_list, embedding=embeddings,distance_strategy="COSINE") # Feeing Data in form of vectors in vector store
             st.success("Video ready!")
             st.rerun() # Refreshing to clear the landing page
 
@@ -63,7 +63,7 @@ else:
             repo_id="mistralai/Mistral-7B-Instruct-v0.2",
             task="text-generation"
             )
-            retriever_ = st.session_state.vectorStore.as_retriever(search_type="similarity",search_kwargs={"k":4})
+            retriever_ = st.session_state.vectorStore.as_retriever(search_type="similarity",search_kwargs={"k":4}) # Retrieving top 4 most similar chunks from vector store
             MISTRAL_QUERY_PROMPT = PromptTemplate(
             input_variables=["question"],
             template="""[INST] You are an AI assistant. Rewrite the following user question 
@@ -86,14 +86,14 @@ else:
             def format(retrivedDocs):
                 cn = "\n\n".join(doc.page_content for doc in retrivedDocs)
                 return cn
-            questionEnhancer = PromptTemplate(
+            questionEnhancer = PromptTemplate( 
                 template='''You are Question Enhancer AI, Enhace the following question into meaningful query with proper grammar and semantic meaning,
                 {question}''',
                 input_variables=["question"]
-            )
+            ) #Enhances Question clarity if a vague query is suspected
             llm = ChatHuggingFace(llm=llm_)
             parser = StrOutputParser()
-            parallelChain = RunnableParallel({
+            parallelChain = RunnableParallel({ 
             "context": multiRetriever | RunnableLambda(format),
             "question":questionEnhancer|llm|parser
                 }
