@@ -79,17 +79,8 @@ else:
                 prompt=MISTRAL_QUERY_PROMPT
             )
             prompt = PromptTemplate(
-            template='''[INST] You are a helpful AI peer. Your goal is to summarize video insights concisely.
-            ### CONSTRAINTS:
-            - Answer using ONLY the "Video Context" provided below.
-            - If the answer isn't there, say: "The video doesn't cover this, but in general..." followed by a 1-sentence explanation.
-            - Use a bulleted list (max 4 bullets).
-            - Keep each bullet under 15 words.
-            - Tone: Informal, helpful, peer-to-peer.
-            ### VIDEO CONTEXT:
-            {context}
-            ### USER QUESTION:
-            {question} [/INST] ''',
+            template='''You are a helpful AI assistant, answer the question {question} on the basis of following context
+             {context} . If the question are not related to the context, say that the video does not cover this topic''',
             input_variables=["context","question"]
                 )
             def format(retrivedDocs):
